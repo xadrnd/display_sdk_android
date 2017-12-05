@@ -1,0 +1,62 @@
+apply plugin: 'com.android.library'
+
+ext {
+    bintrayRepo = 'groundtruth-android-sdk'
+    bintrayName = 'customeventmopub'
+
+    publishedGroupId = 'com.groundtruth.sdk.displaysdk'
+    libraryName = 'customeventmopub'
+    artifact = 'customeventmopub'
+
+    libraryDescription = 'Display SDK for GroundTruth'
+
+    siteUrl = 'https://github.com/xadrnd/display_sdk_android_demo'
+    gitUrl = 'https://github.com/xadrnd/display_sdk_android_demo'
+
+    libraryVersion = '1.0.4'
+    libraryVersionDescription = 'Newest update for customeventmopub'
+    libraryCode = 5
+
+    developerId = 'ground.truth'
+    developerName = 'Ground Truth'
+    developerEmail = 'sdk@groundtruth.com'
+
+    licenseName = 'BSD 3-Clause'
+    licenseUrl = 'https://opensource.org/licenses/BSD-3-Clause'
+    allLicenses = ["BSD 3-Clause"]
+}
+
+android {
+    compileSdkVersion 25
+    buildToolsVersion '25.0.0'
+
+    defaultConfig {
+        minSdkVersion 19
+        targetSdkVersion 25
+        versionCode libraryCode
+        versionName libraryVersion
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        multiDexEnabled true
+
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    compile('com.mopub:mopub-sdk:4.11.0@aar') {
+        transitive = true
+    }
+    compile project(':displaysdk')
+}
+
+apply from: '../installv1.gradle'
+apply from: '../bintrayv1.gradle'

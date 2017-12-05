@@ -1,0 +1,59 @@
+apply plugin: 'com.android.library'
+
+ext {
+    bintrayRepo = 'groundtruth-android-sdk'
+    bintrayName = 'displaysdk'
+
+    publishedGroupId = 'com.groundtruth.sdk.displaysdk'
+    libraryName = 'displaysdk'
+    artifact = 'displaysdk'
+
+    libraryDescription = 'Display SDK for GroundTruth'
+
+    siteUrl = 'https://github.com/xadrnd/display_sdk_android_demo'
+    gitUrl = 'https://github.com/xadrnd/display_sdk_android_demo'
+
+    libraryVersion = '1.0.5'
+    libraryVersionDescription = 'Newest update for displaysdk'
+    libraryCode = 6
+
+    developerId = 'ground.truth'
+    developerName = 'Ground Truth'
+    developerEmail = 'sdk@groundtruth.com'
+
+    licenseName = 'BSD 3-Clause'
+    licenseUrl = 'https://opensource.org/licenses/BSD-3-Clause'
+    allLicenses = ["BSD 3-Clause"]
+}
+
+android {
+    compileSdkVersion 25
+    buildToolsVersion '25.0.0'
+
+    defaultConfig {
+        minSdkVersion 19
+        targetSdkVersion 25
+        versionCode libraryCode
+        versionName libraryVersion
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    testCompile 'junit:junit:4.12'
+    compile 'com.android.support:appcompat-v7:25.2.0'
+    compile 'org.greenrobot:eventbus:3.0.0'
+    compile 'com.squareup.okhttp3:okhttp:3.2.0'
+    compile 'com.google.android.gms:play-services-ads:11.0.4'
+    compile 'com.google.android.gms:play-services-location:11.0.4'
+    compile 'com.android.support:customtabs:25.2.0'
+}
+
+apply from: '../installv1.gradle'
+apply from: '../bintrayv1.gradle'

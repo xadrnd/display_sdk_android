@@ -1,0 +1,4 @@
+*.app/
+*.pyc
+*.apk
+node_modules/

@@ -1,0 +1,12 @@
+.gradle
+local.properties
+.idea/workspace.xml
+.idea/libraries
+.idea/dictionaries
+.DS_Store
+build/
+captures/
+*.xml
+LICENSE.html
+README.html
+*.tar.gz
