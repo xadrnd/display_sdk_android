@@ -78,7 +78,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Logger.setLevel(Logger.Level.VERBOSE);
-        Logger.setLogTagPrefix("GT");
+        Logger.setLogTagPrefix("GT_");
         super.onCreate(savedInstanceState);
         DisplaySdk.sharedInstance().init(this);
         setContentView(R.layout.activity_main);

@@ -1,5 +1,6 @@
 package com.xad.sdk.utils;
 
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import okhttp3.HttpUrl;
@@ -56,11 +57,15 @@ public class UrlGenerator {
         return generateUrl().toString();
     }
 
-    public void addParam(String key, String value) {
-        if(value == null || TextUtils.isEmpty(value)) {
+    public void addParam(@NonNull String key, @NonNull String value) {
+        if(TextUtils.isEmpty(value)) {
             return;
         }
         httpUrlBuilder.addQueryParameter(key, value);
+    }
+
+    public void removeParam(@NonNull String key) {
+        httpUrlBuilder.removeAllQueryParameters(key);
     }
 }
 

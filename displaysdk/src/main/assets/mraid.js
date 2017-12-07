@@ -261,12 +261,12 @@
     };
 
     mraid.getScreenSize = function() {
-        log.i("mraid.getScreenSize");
+//        log.i("mraid.getScreenSize");
         return screenSize;
     };
 
     mraid.getState = function() {
-        log.i("mraid.getState: " + state);
+//        log.i("mraid.getState: " + state);
         return state;
     };
 
@@ -276,7 +276,7 @@
     };
 
     mraid.isViewable = function() {
-        log.i("mraid.isViewable: " + isViewable);
+//        log.i("mraid.isViewable: " + isViewable);
         return isViewable;
     };
 

@@ -251,6 +251,8 @@ public class MRAIDView extends RelativeLayout {
         injectMraidJS(webView, new JavascriptInjectionHandler() {
             @Override
             public void beforeInjecting() {
+                String handleUnhandledExceptionJS = "window.addEventListener(\"error\", function (e) {console.log(\"GT-ErrorReport:\" + e.error.message);return false;})";
+                injectJavaScript(webView, handleUnhandledExceptionJS , null);
             }
             @Override
             public void afterInjected() {
@@ -575,6 +577,8 @@ public class MRAIDView extends RelativeLayout {
                             injectMraidJS(webViewPart2, new JavascriptInjectionHandler() {
                                 @Override
                                 public void beforeInjecting() {
+                                    String handleUnhandledExceptionJS = "window.addEventListener(\"error\", function (e) {console.log(\"GT-ErrorReport:\" + e.error.message);return false;})";
+                                    injectJavaScript(webView, handleUnhandledExceptionJS , null);
                                 }
 
                                 @Override
@@ -1310,11 +1314,15 @@ public class MRAIDView extends RelativeLayout {
             if(cm==null || cm.message()==null) {
                 return false;
             }
-//            if (!cm.message().contains("Uncaught ReferenceError")) {
             Logger.logDebug("JS console", cm.message()
                     + (cm.sourceId() == null ? "" : " at " + cm.sourceId())
                     + ":" + cm.lineNumber());
-//            }
+            if(cm.message().startsWith("GT-ErrorReport:")) {
+                ErrorPosting.sendError(MRAIDView.this.getContext(),
+                        ErrorPosting.CONTENT_INJECT_JAVASCRIPT_ERROR_TO_POST,
+                        MRAIDView.this.creativeEvent.CreativeString,//TODO change to error message
+                        MRAIDView.this.creativeEvent.adGroupId);
+            }
             return true;
         }
 

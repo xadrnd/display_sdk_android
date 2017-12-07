@@ -180,6 +180,8 @@ public class AdUrlGenerator extends UrlGenerator {
             return this;
         }
 
+        removeParam("sdk_conf");
+
         addParam("lat", Double.toString(location.getLatitude()));
         addParam("long", Double.toString(location.getLongitude()));
         if (location.hasAccuracy()) {

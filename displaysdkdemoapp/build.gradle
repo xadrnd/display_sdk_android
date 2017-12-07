@@ -18,6 +18,10 @@ android {
         }
     }
     productFlavors {
+        TestApp {
+            buildConfigField "String", "ACCESS_KEY", '"upT9vzr2jgqyw_g7pi5tv6HjLcP0-U68DPdTMcMwvw0."'
+        }
+
         Adhoc {
             buildConfigField "String", "ACCESS_KEY", '"IVHJ13ymJ99x6hAYre9cE2hcnocQGNkJm4Sev66Fy_y3CtPIgl7W5eSDcxC8uk71"'
         }

@@ -1,1 +1,1 @@
-include ':displaysdkdemoapp', ':displaysdk', ':customeventdemo', ':customeventgooglemobileads', ':customeventmopub', ':unitedsdktester'
+include ':displaysdkdemoapp', ':displaysdk', ':customeventdemo', ':customeventgooglemobileads', ':customeventmopub'
