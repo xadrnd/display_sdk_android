@@ -16,9 +16,9 @@ public final class MRAIDOrientationProperties {
         this(true, FORCE_ORIENTATION_NONE);
     }
     
-    public MRAIDOrientationProperties(boolean allowOrientationChange, int forceOrienation) {
+    public MRAIDOrientationProperties(boolean allowOrientationChange, int forceOrientation) {
         this.allowOrientationChange = allowOrientationChange;
-        this.forceOrientation = forceOrienation;
+        this.forceOrientation = forceOrientation;
     }
     
     static public int forceOrientationFromString(String name) {
@@ -38,6 +38,12 @@ public final class MRAIDOrientationProperties {
         case FORCE_ORIENTATION_NONE: return "none";
         default: return "error";
         }
+    }
+
+    //TODO only for temporary use. Use MraidController.OrientationProperties instead
+    public MRAIDOrientationProperties(OrientationProperties op) {
+        this.allowOrientationChange = op.allowOrientationChange;
+        this.forceOrientation = forceOrientationFromString(op.forceOrientation.value);
     }
  
 }

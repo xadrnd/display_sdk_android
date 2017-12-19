@@ -57,12 +57,21 @@ public class MRAIDHtmlProcessor {
                 "*:not(input) { -webkit-touch-callout:none; -webkit-user-select:none; -webkit-text-size-adjust:none; }" + ls +
                 "</style>";
 
+        String mraidJsTag =
+                "<script type=\"text/javascript\">\n" +
+                        "   window.onerror = function(message, source, lineno, colno, error) {\n" +
+                        "        console.log(\"GT-ErrorReport:\" + message);\n" +
+                        "        return false;\n" +
+                        "   }\n" +
+                        "</script>";
+        //TODO add mraid js wrapper
+
         regex = "<head[^>]*>";
         pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
         matcher = pattern.matcher(processedHtml);
         int idx = 0;
         while (matcher.find(idx)) {
-            processedHtml.insert(matcher.end(), ls + metaTag + ls + styleTag);
+            processedHtml.insert(matcher.end(), ls + metaTag + ls + styleTag + ls + mraidJsTag);
             idx = matcher.end();
         }
 

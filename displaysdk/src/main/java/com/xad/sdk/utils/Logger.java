@@ -1,6 +1,7 @@
 package com.xad.sdk.utils;
 
 import android.util.Log;
+import android.webkit.JavascriptInterface;
 
 import com.xad.sdk.DisplaySdk;
 
@@ -144,6 +145,38 @@ public class Logger {
             if(postLogIsEnabled()) {
                 DisplaySdk.sharedBus().post(new LogEvent(currentTime() + tag + ": (V) " + msg));
             }
+        }
+    }
+
+    public static class LoggerLink {
+        String tag;
+        public LoggerLink(String tag) {
+            this.tag = tag;
+        }
+
+        @JavascriptInterface
+        public void verbose(String msg) {
+            Logger.logVerbose(tag, msg);
+        }
+
+        @JavascriptInterface
+        public void debug(String msg) {
+            Logger.logDebug(tag, msg);
+        }
+
+        @JavascriptInterface
+        public void info(String msg) {
+            Logger.logInfo(tag, msg);
+        }
+
+        @JavascriptInterface
+        public void warning(String msg) {
+            Logger.logWarning(tag, msg);
+        }
+
+        @JavascriptInterface
+        public void error(String msg) {
+            Logger.logError(tag, msg);
         }
     }
 }

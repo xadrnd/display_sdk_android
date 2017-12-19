@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 25
-    buildToolsVersion '25.0.0'
+    buildToolsVersion '26.0.2'
 
     defaultConfig {
         applicationId "com.xad.sdk.sdkdemo"
@@ -11,6 +11,9 @@ android {
         versionCode 1
         versionName "1.0"
     }
+
+    flavorDimensions "key"
+
     buildTypes {
         release {
             minifyEnabled false
@@ -20,10 +23,12 @@ android {
     productFlavors {
         TestApp {
             buildConfigField "String", "ACCESS_KEY", '"upT9vzr2jgqyw_g7pi5tv6HjLcP0-U68DPdTMcMwvw0."'
+            dimension "key"
         }
 
         Adhoc {
             buildConfigField "String", "ACCESS_KEY", '"IVHJ13ymJ99x6hAYre9cE2hcnocQGNkJm4Sev66Fy_y3CtPIgl7W5eSDcxC8uk71"'
+            dimension "key"
         }
     }
 }

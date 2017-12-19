@@ -2,10 +2,17 @@
 //  mraid.js
 //
 
-(function() {
-    
-    console.log("MRAID object start loading...");
 
+//Logger interface in MraidView class: line# 357
+//LoggerLink logger = new LoggerLink("JS_Console")
+(function() {
+
+    console.log("MRAID object starts loading...");
+    console.log("Adding error event listener");
+    window.onerror = function(message, source, lineno, colno, error) {
+        console.log("GT-ErrorReport:" + message);
+        return false;
+    }
     /***************************************************************************
      * MRAID declaration
      **************************************************************************/
@@ -28,28 +35,24 @@
     var log = {};
 
     log.d = function(msg) {
-        if (mraid.logLevel <= mraid.LogLevelEnum.DEBUG) {
-            console.log("(D-mraid.js) " + msg);
-        }
+        logger.debug(msg);
     };
 
     log.i = function(msg) {
-        if (mraid.logLevel <= mraid.LogLevelEnum.INFO) {
-            console.log("(I-mraid.js) " + msg);
-        }
+        logger.info(msg);
     };
 
     log.w = function(msg) {
-        if (mraid.logLevel <= mraid.LogLevelEnum.WARNING) {
-            console.log("(W-mraid.js) " + msg);
-        }
+        logger.warning(msg);
     };
 
     log.e = function(msg) {
-        if (mraid.logLevel <= mraid.LogLevelEnum.ERROR) {
-            console.log("(E-mraid.js) " + msg);
-        }
+        logger.error(msg);
     };
+
+    log.v = function(msg) {
+        logger.verbose(msg);
+    }
 
     /***************************************************************************
      * constants
@@ -831,6 +834,6 @@
         }
     };
     
-    console.log("MRAID object loaded");
+    console.log("MRAID object is loaded");
 
 })();

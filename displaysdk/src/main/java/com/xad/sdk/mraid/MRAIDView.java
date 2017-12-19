@@ -55,6 +55,8 @@ import com.xad.sdk.mraid.internal.MRAIDNativeFeatureManager;
 import com.xad.sdk.mraid.internal.MRAIDParser;
 import com.xad.sdk.mraid.properties.MRAIDOrientationProperties;
 import com.xad.sdk.mraid.properties.MRAIDResizeProperties;
+import com.xad.sdk.mraid.properties.OrientationProperties;
+import com.xad.sdk.mraid.properties.ResizeProperties;
 import com.xad.sdk.utils.Constants;
 import com.xad.sdk.utils.ErrorPosting;
 import com.xad.sdk.utils.Logger;
@@ -221,7 +223,7 @@ public class MRAIDView extends RelativeLayout {
         } else {
             originalRequestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
         }
-        Logger.logDebug(TAG, "originalRequestedOrientation " + getOrientationString(originalRequestedOrientation));
+        Logger.logVerbose(TAG, "originalRequestedOrientation " + getOrientationString(originalRequestedOrientation));
         
         // ignore scroll gestures
         gestureDetector = new GestureDetector(getContext(), new SimpleOnGestureListener() {
@@ -247,17 +249,15 @@ public class MRAIDView extends RelativeLayout {
             }
             return;
         }
+
         final String dataCopy = data;
         injectMraidJS(webView, new JavascriptInjectionHandler() {
             @Override
             public void beforeInjecting() {
-                String handleUnhandledExceptionJS = "window.addEventListener(\"error\", function (e) {console.log(\"GT-ErrorReport:\" + e.error.message);return false;})";
-                injectJavaScript(webView, handleUnhandledExceptionJS , null);
             }
             @Override
             public void afterInjected() {
-//                injectJavaScript(webView, "mraid.logLevel = mraid.LogLevelEnum." + Logger.getLevel().value + ";");
-                injectJavaScript(webView, "mraid.logLevel = mraid.LogLevelEnum.NONE;");
+                injectJavaScript(webView, "mraid.logLevel = mraid.LogLevelEnum." + Logger.getLevel().value + ";");
                 webView.loadDataWithBaseURL(Constants.XAD_HOST, dataCopy, "text/html", "UTF-8", null);
             }
         });
@@ -285,7 +285,7 @@ public class MRAIDView extends RelativeLayout {
             @Override
             public void onConfigurationChanged(Configuration newConfig) {
                 super.onConfigurationChanged(newConfig);
-                Logger.logDebug(TAG, "onConfigurationChanged " + (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT ? "portrait" : "landscape"));
+                Logger.logVerbose(TAG, "onConfigurationChanged " + (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT ? "portrait" : "landscape"));
                 if (isInterstitial) {
                     ((Activity) mContext).getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
                 }
@@ -294,7 +294,7 @@ public class MRAIDView extends RelativeLayout {
             @Override
             protected void onVisibilityChanged(View changedView, int visibility) {
                 super.onVisibilityChanged(changedView, visibility);
-                Logger.logDebug(TAG, "onVisibilityChanged " + getVisibilityString(visibility));
+                Logger.logVerbose(TAG, "onVisibilityChanged " + getVisibilityString(visibility));
                 if (isInterstitial) {
                     setViewable(visibility);
                 }
@@ -304,7 +304,7 @@ public class MRAIDView extends RelativeLayout {
             protected void onWindowVisibilityChanged(int visibility) {
                 super.onWindowVisibilityChanged(visibility);
                 int actualVisibility = getVisibility();
-                Logger.logDebug(TAG, "onWindowVisibilityChanged " + getVisibilityString(visibility) +
+                Logger.logVerbose(TAG, "onWindowVisibilityChanged " + getVisibilityString(visibility) +
                         " (actual " + getVisibilityString(actualVisibility) + ")");
                 if (isInterstitial) {
                     setViewable(actualVisibility);
@@ -318,7 +318,7 @@ public class MRAIDView extends RelativeLayout {
 
             @Override
             protected void onSizeChanged(int w, int h, int ow, int oh) {
-                Logger.logDebug(TAG, "W:" + w + ", H:" + h + ", OW:" + ow + ", OH:" + oh);
+                Logger.logVerbose(TAG, "W:" + w + ", H:" + h + ", OW:" + ow + ", OH:" + oh);
                 super.onSizeChanged(w, h, ow, oh);
             }
         };
@@ -355,12 +355,14 @@ public class MRAIDView extends RelativeLayout {
         wv.setWebChromeClient(mraidWebChromeClient);
         wv.setWebViewClient(mraidWebViewClient);
 
+        //exp: use javascript interface
+        wv.addJavascriptInterface(new Logger.LoggerLink("JS_Logger"), "logger");
+
         if (Build.VERSION.SDK_INT >= 21) {
             wv.getSettings().setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
         }
 
-//TODO
-//Used for debug mode. Don't delete
+//TODO - Used for debug mode. Don't delete
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             if (0 != (mContext.getApplicationInfo().flags &= ApplicationInfo.FLAG_DEBUGGABLE)) {
                 WebView.setWebContentsDebuggingEnabled(true);
@@ -485,7 +487,7 @@ public class MRAIDView extends RelativeLayout {
     // These are methods in the MRAID API.
     ///////////////////////////////////////////////////////
     
-    private void close() {
+    void close() {
         Logger.logDebug(TAG + "-JS callback", "close");
         handler.post(new Runnable() {
             @Override
@@ -503,7 +505,7 @@ public class MRAIDView extends RelativeLayout {
     }
 
     @SuppressWarnings("unused")
-    private void createCalendarEvent(String eventJSON) {
+    void createCalendarEvent(String eventJSON) {
         Logger.logDebug(TAG + "-JS callback", "createCalendarEvent " + eventJSON);
         if (nativeFeatureListener != null) {
             nativeFeatureListener.mraidNativeFeatureCreateCalendarEvent(eventJSON);
@@ -512,7 +514,7 @@ public class MRAIDView extends RelativeLayout {
 
     // Note: This method is also used to present an interstitial ad.
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    private void expand(String url) {
+    void expand(@Nullable String url) {
         Logger.logDebug(TAG + "-JS callback", "expand " + (url != null ? url : "(1-part)"));
         
         // The only time it is valid to call expand on a banner ad is
@@ -576,10 +578,7 @@ public class MRAIDView extends RelativeLayout {
                             webViewPart2 = createWebView();
                             injectMraidJS(webViewPart2, new JavascriptInjectionHandler() {
                                 @Override
-                                public void beforeInjecting() {
-                                    String handleUnhandledExceptionJS = "window.addEventListener(\"error\", function (e) {console.log(\"GT-ErrorReport:\" + e.error.message);return false;})";
-                                    injectJavaScript(webView, handleUnhandledExceptionJS , null);
-                                }
+                                public void beforeInjecting() {}
 
                                 @Override
                                 public void afterInjected() {
@@ -600,7 +599,7 @@ public class MRAIDView extends RelativeLayout {
         }, "2-part-content")).start();
     }
     
-    private void open(String url) {
+    void open(String url) {
         try {
             url = URLDecoder.decode(url,"UTF-8");
             Logger.logDebug(TAG + "-JS callback", "open " + url);
@@ -620,7 +619,7 @@ public class MRAIDView extends RelativeLayout {
     }
 
     @SuppressWarnings("unused")
-    private void playVideo(String url) {
+    void playVideo(String url) {
         try {
             url = URLDecoder.decode(url,"UTF-8");
             Logger.logDebug(TAG + "-JS callback", "playVideo " + url);
@@ -633,7 +632,7 @@ public class MRAIDView extends RelativeLayout {
     }
 
     @SuppressWarnings("unused")
-    private void resize() {
+    void resize() {
         Logger.logDebug(TAG + "-JS callback", "resize");
         
         // We need the cooperation of the app in order to do a resize. 
@@ -668,8 +667,8 @@ public class MRAIDView extends RelativeLayout {
         });
     }
 
-    @SuppressWarnings("unused")
-    private void setOrientationProperties(Map<String, String> properties) {
+    @Deprecated
+    void setOrientationProperties(Map<String, String> properties) {
         boolean allowOrientationChange = Boolean.parseBoolean(properties.get("allowOrientationChange"));
         String forceOrientation = properties.get("forceOrientation");
         Logger.logDebug(TAG + "-JS callback", "setOrientationProperties "
@@ -686,8 +685,20 @@ public class MRAIDView extends RelativeLayout {
         }
     }
 
+    public void setOrientationProperties(OrientationProperties op) {
+        if (orientationProperties.allowOrientationChange != op.allowOrientationChange ||
+                orientationProperties.forceOrientation !=
+                        MRAIDOrientationProperties.forceOrientationFromString(op.forceOrientation.value)) {
+            this.orientationProperties = new MRAIDOrientationProperties(op);
+            if (isInterstitial || state == STATE_EXPANDED) {
+                applyOrientationProperties();
+            }
+        }
+    }
+
+    @Deprecated
     @SuppressWarnings("unused")
-    private void setResizeProperties(Map<String, String> properties) {
+    void setResizeProperties(Map<String, String> properties) {
         int width = 0;
         int height = 0;
         int offsetX = 0;
@@ -716,8 +727,17 @@ public class MRAIDView extends RelativeLayout {
         resizeProperties.allowOffscreen = allowOffscreen;
     }
 
+    public void setResizeProperties(ResizeProperties resizeProperties) {
+        this.resizeProperties.offsetX = resizeProperties.offsetX;
+        this.resizeProperties.offsetY = resizeProperties.offsetY;
+        this.resizeProperties.width = resizeProperties.width;
+        this.resizeProperties.height = resizeProperties.height;
+        this.resizeProperties.customClosePosition = MRAIDResizeProperties.customClosePositionFromString(resizeProperties.customClosePosition.value);
+        this.resizeProperties.allowOffscreen = resizeProperties.allowOffscreen;
+    }
+
     @SuppressWarnings("unused")
-    private void storePicture(String url) {
+    void storePicture(String url) {
         try {
             url = URLDecoder.decode(url,"UTF-8");
             Logger.logDebug(TAG + "-JS callback", "storePicture " + url);
@@ -729,10 +749,22 @@ public class MRAIDView extends RelativeLayout {
         }
     }
 
-    @SuppressWarnings("unused")
-    private void useCustomClose(String useCustomCloseString) {
+    @Deprecated
+    void useCustomClose(String useCustomCloseString) {
         Logger.logDebug(TAG + "-JS callback", "useCustomClose " + useCustomCloseString);
         boolean useCustomClose = Boolean.parseBoolean(useCustomCloseString);
+        if (this.useCustomClose != useCustomClose) {
+            this.useCustomClose = useCustomClose;
+            if (useCustomClose) {
+                removeDefaultCloseButton();
+            } else {
+                showDefaultCloseButton(closeRegion);
+            }
+        }
+    }
+
+    void useCustomClose(boolean useCustomClose) {
+        Logger.logDebug(TAG + "-JS callback", "useCustomClose " + useCustomClose);
         if (this.useCustomClose != useCustomClose) {
             this.useCustomClose = useCustomClose;
             if (useCustomClose) {
@@ -1186,11 +1218,11 @@ public class MRAIDView extends RelativeLayout {
         return mraidJs;
     }
     
-    private void injectJavaScriptInCurrentWebView(String js) {
+    void injectJavaScriptInCurrentWebView(String js) {
         injectJavaScript(currentWebView, js);
     }
     
-    private void injectJavaScript(@Nullable WebView webView, String js) {
+    void injectJavaScript(@Nullable WebView webView, String js) {
         if(webView == null) {
             Logger.logDebug(TAG, "WebView is destroyed, while MRAIDView is not");
             return;
@@ -1314,7 +1346,7 @@ public class MRAIDView extends RelativeLayout {
             if(cm==null || cm.message()==null) {
                 return false;
             }
-            Logger.logDebug("JS console", cm.message()
+            Logger.logDebug("JS_Console", cm.message()
                     + (cm.sourceId() == null ? "" : " at " + cm.sourceId())
                     + ":" + cm.lineNumber());
             if(cm.message().startsWith("GT-ErrorReport:")) {
@@ -1603,10 +1635,10 @@ public class MRAIDView extends RelativeLayout {
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         super.onLayout(changed, left, top, right, bottom);
-        Logger.logDebug(TAG, "onLayout (" + state + ") " +
+        Logger.logVerbose(TAG, "onLayout (" + state + ") " +
                 changed + " " + left + " " + top + " " + right + " " + bottom);
         if (isForcingFullScreen) {
-            Logger.logDebug(TAG, "onLayout ignored");
+            Logger.logVerbose(TAG, "onLayout ignored");
             return;
         }
         if (state == STATE_EXPANDED || state == STATE_RESIZED) {
@@ -1641,14 +1673,14 @@ public class MRAIDView extends RelativeLayout {
     
     private void onLayoutWebView(WebView wv, boolean changed, int left, int top, int right, int bottom) {
         boolean isCurrent = (wv == currentWebView);
-        Logger.logDebug(TAG, "onLayoutWebView " + (wv == webView ? "1 " : "2 ") + isCurrent + " (" + state + ") " +
+        Logger.logVerbose(TAG, "onLayoutWebView " + (wv == webView ? "1 " : "2 ") + isCurrent + " (" + state + ") " +
                 changed + " " + left + " " + top + " " + right + " " + bottom);
         if (!isCurrent) {
-            Logger.logDebug(TAG, "onLayoutWebView ignored, not current");
+            Logger.logVerbose(TAG, "onLayoutWebView ignored, not current");
             return;
         }
         if (isForcingFullScreen) {
-            Logger.logDebug(TAG, "onLayoutWebView ignored, isForcingFullScreen");
+            Logger.logVerbose(TAG, "onLayoutWebView ignored, isForcingFullScreen");
             isForcingFullScreen = false;
             return;
         }
@@ -1693,10 +1725,10 @@ public class MRAIDView extends RelativeLayout {
     private void calculateScreenSize() {
         int orientation = getResources().getConfiguration().orientation;
         boolean isPortrait =  (orientation == Configuration.ORIENTATION_PORTRAIT);
-        Logger.logDebug(TAG, "calculateScreenSize orientation " + (isPortrait ? "portrait" : "landscape"));
+        Logger.logVerbose(TAG, "calculateScreenSize orientation " + (isPortrait ? "portrait" : "landscape"));
         int width = displayMetrics.widthPixels;
         int height = displayMetrics.heightPixels;
-        Logger.logDebug(TAG, "calculateScreenSize screen size " + width + "x" + height);
+        Logger.logVerbose(TAG, "calculateScreenSize screen size " + width + "x" + height);
         if (width != screenSize.width || height != screenSize.height) {
             screenSize.width = width;
             screenSize.height = height;
@@ -1711,17 +1743,17 @@ public class MRAIDView extends RelativeLayout {
         Rect frame = new Rect();
         Window window = ((Activity) mContext).getWindow();
         window.getDecorView().getWindowVisibleDisplayFrame(frame);
-        Logger.logDebug(TAG, "calculateMaxSize frame [" + frame.left + "," + frame.top + "][" + frame.right + "," + frame.bottom + "] (" +
+        Logger.logVerbose(TAG, "calculateMaxSize frame [" + frame.left + "," + frame.top + "][" + frame.right + "," + frame.bottom + "] (" +
                 frame.width() + "x" + frame.height() + ")");
         statusHeight = frame.top;
         contentViewTop = window.findViewById(Window.ID_ANDROID_CONTENT).getTop();
         int titleHeight = contentViewTop - statusHeight;
-        Logger.logDebug(TAG, "calculateMaxSize statusHeight " + statusHeight);
-        Logger.logDebug(TAG, "calculateMaxSize titleHeight " + titleHeight);
-        Logger.logDebug(TAG, "calculateMaxSize contentViewTop " + contentViewTop);
+        Logger.logVerbose(TAG, "calculateMaxSize statusHeight " + statusHeight);
+        Logger.logVerbose(TAG, "calculateMaxSize titleHeight " + titleHeight);
+        Logger.logVerbose(TAG, "calculateMaxSize contentViewTop " + contentViewTop);
         width = frame.width();
         height = screenSize.height - contentViewTop;
-        Logger.logDebug(TAG, "calculateMaxSize max size " + width + "x" + height);
+        Logger.logVerbose(TAG, "calculateMaxSize max size " + width + "x" + height);
         if (width != maxSize.width || height != maxSize.height) {
             maxSize.width = width;
             maxSize.height = height;
@@ -1742,14 +1774,14 @@ public class MRAIDView extends RelativeLayout {
         view.getLocationOnScreen(location);
         x = location[0];
         y = location[1];
-        Logger.logDebug(TAG, "calculatePosition " + name + " locationOnScreen [" + x + "," + y + "]");
-        Logger.logDebug(TAG, "calculatePosition " + name + " contentViewTop " + contentViewTop);
+        Logger.logVerbose(TAG, "calculatePosition " + name + " locationOnScreen [" + x + "," + y + "]");
+        Logger.logVerbose(TAG, "calculatePosition " + name + " contentViewTop " + contentViewTop);
         y = y - contentViewTop - statusHeight;
 
         width = view.getWidth();
         height = view.getHeight();
         
-        Logger.logDebug(TAG, "calculatePosition " + name + " position [" + x + "," + y + "] (" + width + "x" + height + ")");
+        Logger.logVerbose(TAG, "calculatePosition " + name + " position [" + x + "," + y + "] (" + width + "x" + height + ")");
         
         Rect position = isCurrentWebView ? currentPosition : defaultPosition;
 
@@ -1783,14 +1815,14 @@ public class MRAIDView extends RelativeLayout {
     }
         
     private void applyOrientationProperties() {
-        Logger.logDebug(TAG, "applyOrientationProperties " +
+        Logger.logVerbose(TAG, "applyOrientationProperties " +
                 orientationProperties.allowOrientationChange + " " + orientationProperties.forceOrientationString());
         
         Activity activity = (Activity) mContext;
         
         int currentOrientation = getResources().getConfiguration().orientation;
         boolean isCurrentPortrait = (currentOrientation == Configuration.ORIENTATION_PORTRAIT);
-        Logger.logDebug(TAG, "currentOrientation " + (isCurrentPortrait ? "portrait" : "landscape"));
+        Logger.logVerbose(TAG, "currentOrientation " + (isCurrentPortrait ? "portrait" : "landscape"));
         
         int orientation = originalRequestedOrientation;
         if (orientationProperties.forceOrientation == MRAIDOrientationProperties.FORCE_ORIENTATION_PORTRAIT) {
@@ -1811,7 +1843,7 @@ public class MRAIDView extends RelativeLayout {
     }
     
     private void restoreOriginalOrientation() {
-        Logger.logDebug(TAG, "restoreOriginalOrientation");
+        Logger.logVerbose(TAG, "restoreOriginalOrientation");
         Activity activity = (Activity) mContext;
         int currentRequestedOrientation = activity.getRequestedOrientation();
         if (currentRequestedOrientation != originalRequestedOrientation) {
