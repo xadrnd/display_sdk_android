@@ -1,6 +1,8 @@
 package com.xad.sdk;
 
+import com.xad.sdk.mraid.internal.MRAIDHtmlProcessor;
 import com.xad.sdk.utils.AdUrlGenerator;
+import com.xad.sdk.utils.Logger;
 
 import org.junit.Test;
 
@@ -41,5 +43,16 @@ public class ExampleUnitTest {
         } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
             e.printStackTrace();
         }
+    }
+
+    @Test
+    public void testHtmlWithMraidJS() {
+        String html = "<html>\n" +
+                "<header>\n<title>This is title</title>\n</header>\n" +
+                "<body>\n" +
+                "Hello world\n" +
+                "</body>\n" +
+                "</html>";
+        System.out.println(MRAIDHtmlProcessor.processRawHtml(html, "console.log(\"this is mraid js\")"));
     }
 }
